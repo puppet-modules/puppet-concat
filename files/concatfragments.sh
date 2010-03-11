@@ -44,7 +44,7 @@ WORKDIR=""
 TEST=""
 FORCE=""
 WARN=""
-SORT="/bin/sort"
+SORT="sort"
 SORTARG="-z"
 
 while getopts "o:s:d:tnwf" options; do
@@ -109,15 +109,15 @@ else
 fi
 
 # find all the files in the fragments directory, sort them numerically and concat to fragments.concat in the working dir
-/usr/bin/find fragments/ -type f -print0 |${SORT} ${SORTARG}|/usr/bin/xargs -0 /bin/cat >>"fragments.concat"
+find fragments/ -type f -print0 |${SORT} ${SORTARG}|xargs -0 cat >>"fragments.concat"
 
 if [ x${TEST} = "x" ]; then
 	# This is a real run, copy the file to outfile
-	/bin/cp fragments.concat ${OUTFILE}
+	cp fragments.concat ${OUTFILE}
 	RETVAL=$?
 else
 	# Just compare the result to outfile to help the exec decide
-	/usr/bin/cmp ${OUTFILE} fragments.concat
+	cmp ${OUTFILE} fragments.concat
 	RETVAL=$?
 fi
 
