@@ -99,7 +99,13 @@ define concat($mode = 0644, $owner = "root", $group = "root") {
             group    => $group,
             ensure   => present;
 
+         "${fragdir}/fragments.concat.out":
+            owner    => $owner,
+            group    => $group,
+            ensure   => present;
+
          $name:
+				source	=> "${fragdir}/fragments.concat.out",
             owner    => $owner,
             group    => $group,
             checksum => md5,
@@ -115,7 +121,7 @@ define concat($mode = 0644, $owner = "root", $group = "root") {
         subscribe => File[$fragdir],
         alias     => "concat_${fragdir}",
         require   => [ File["/usr/local/bin/concatfragments.sh"], File[$fragdir], File["${fragdir}/fragments"], File["${fragdir}/fragments.concat"] ],
-        unless    => "/usr/local/bin/concatfragments.sh -o ${name} -d ${fragdir} -t",
-        command   => "/usr/local/bin/concatfragments.sh -o ${name} -d ${fragdir}",
+        unless    => "/usr/local/bin/concatfragments.sh -o ${fragdir}/fragments.concat.out -d ${fragdir} -t",
+        command   => "/usr/local/bin/concatfragments.sh -o ${fragdir}/fragments.concat.out -d ${fragdir}",
     }
 }
