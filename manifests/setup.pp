@@ -1,7 +1,8 @@
-# Sets up the concat system, you should set $concatdir to a place
-# you wish the fragments to live, this should not be somewhere like
-# /tmp since ideally these files should not be deleted ever, puppet
-# should always manage them
+# Sets up the concat system.
+#
+# $concatdir should point to a place where you wish the fragments to
+# live. This should not be somewhere like /tmp since ideally these files
+# should not be deleted ever, puppet should always manage them
 #
 # $puppetversion should be either 24 or 25 to enable a 24 compatible
 # mode, in 24 mode you might see phantom notifies this is a side effect
