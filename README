@@ -21,10 +21,12 @@ CHANGELOG:
 	     - add the ability to add shell comment based warnings to 
 	       top of files
 	     - add the ablity to create empty files
+- 2010/03/31 - publish and integrate into puppet-modules
 
 CONTRIBUTORS:
 Paul Elliot - Provided 0.24.8 support, shell warnings and empty file 
               creation support.
+David Schmitt - publish and integrate into puppet-modules
 
 
 CONTACT:
