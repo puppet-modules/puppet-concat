@@ -104,21 +104,9 @@ define concat($mode = 0644, $owner = "root", $group = "root", $warn = "false", $
         mode  => $mode,
     }
 
-    file{$fragdir:
-            ensure   => directory;
+    module_dir { [ "concat/${safe_name}", "concat/${safe_name}/fragments" ]: }
 
-         "${fragdir}/fragments":
-            ensure   => directory,
-            recurse  => true,
-            purge    => true,
-            force    => true,
-            ignore   => [".svn", ".git"],
-            source   => $version ? {
-                            24      => "puppet:///concat/null",
-                            default => undef,
-                        },
-            notify   => Exec["concat_${name}"];
-
+    file{
          "${fragdir}/fragments.concat":
             owner    => $owner,
             group    => $group,
