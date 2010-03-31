@@ -28,6 +28,11 @@
 # stored.  Avoid placing this somewhere like /tmp since you should never
 # delete files here, puppet will manage them.
 #
+# If you are on version 0.24.8 or newer you can set $puppetversion to 24 in 
+# concat::setup to enable a compatible mode, else just leave it on 25
+#
+# If your sort utility is not in /bin/sort please set $sort in concat::setup
+# 
 # Before you can use any of the concat features you should include the 
 # class concat::setup somewhere on your node first.
 #
@@ -57,6 +62,9 @@
 #  - mode       The mode of the final file
 #  - owner      Who will own the file
 #  - group      Who will own the file
+#  - force      Enables creating empty files if no fragments are present
+#  - warn       Adds a normal shell style comment top of the file indicating
+#               that it is built by puppet
 #
 # ACTIONS:
 #  - Creates fragment directories if it didn't exist already
@@ -72,11 +80,23 @@
 # ALIASES:
 #  - The exec can notified using Exec["concat_/path/to/file"] or Exec["concat_/path/to/directory"]
 #  - The final file can be referened as File["/path/to/file"] or File["concat_/path/to/file"]  
-define concat($mode = 0644, $owner = "root", $group = "root") {
+define concat($mode = 0644, $owner = "root", $group = "root", $warn = "false", $force = "false") {
     $safe_name = regsubst($name, '/', '_', 'G')
     $concatdir = $concat::setup::concatdir
+    $version   = $concat::setup::majorversion
+    $sort      = $concat::setup::sort
     $fragdir   = "${concatdir}/${safe_name}"
     $concat_name = "fragments.concat.out"
+
+    $warnflag = $warn ? {
+                    true      => "-w",
+                    default     => "",
+                }
+
+    $forceflag = $force ? {
+                    true      => "-f",
+                    default     => "",
+                }
 
     File{
         owner => $owner,
@@ -93,6 +113,10 @@ define concat($mode = 0644, $owner = "root", $group = "root") {
             purge    => true,
             force    => true,
             ignore   => [".svn", ".git"],
+            source   => $version ? {
+                            24      => "puppet:///concat/null",
+                            default => undef,
+                        },
             notify   => Exec["concat_${name}"];
 
          "${fragdir}/fragments.concat":
@@ -106,7 +130,7 @@ define concat($mode = 0644, $owner = "root", $group = "root") {
             ensure   => present;
 
          $name:
-				source	=> "${fragdir}/${concat_name}",
+            source	=> "${fragdir}/${concat_name}",
             owner    => $owner,
             group    => $group,
             checksum => md5,
@@ -122,7 +146,7 @@ define concat($mode = 0644, $owner = "root", $group = "root") {
         subscribe => File[$fragdir],
         alias     => "concat_${fragdir}",
         require   => [ File["/usr/local/bin/concatfragments.sh"], File[$fragdir], File["${fragdir}/fragments"], File["${fragdir}/fragments.concat"] ],
-        unless    => "/usr/local/bin/concatfragments.sh -o ${fragdir}/${concat_name} -d ${fragdir} -t",
-        command   => "/usr/local/bin/concatfragments.sh -o ${fragdir}/${concat_name} -d ${fragdir}",
+        unless    => "/usr/local/bin/concatfragments.sh -o ${fragdir}/${concat_name} -d ${fragdir} -t -s ${sort} ${warnflag} ${forceflag}",
+        command   => "/usr/local/bin/concatfragments.sh -o ${fragdir}/${concat_name} -d ${fragdir} -s ${sort} ${warnflag} ${forceflag}",
     }
 }
